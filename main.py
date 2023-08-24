@@ -38,7 +38,7 @@ def index():
 
 # Sending the prompt to OpenAI and getting the completion
 def process_prompt(token, prompt, model, temperature, max_token):
-    app.logger.log(f"Sending message GPT\n{token}\n{prompt}\nmodel: {model}\ntemperature: {temperature}\nmax_token: {max_token}\n\n")
+    app.logger.info(f"Sending message GPT\n{token}\n{prompt}\nmodel: {model}\ntemperature: {temperature}\nmax_token: {max_token}\n\n")
     response = openai.ChatCompletion.create(
         model=model,
         prompt=prompt,
@@ -47,7 +47,7 @@ def process_prompt(token, prompt, model, temperature, max_token):
     )
     operations[token]['status'] = 'complete'
     operations[token]['completion'] = response
-    app.logger.log(f"Received response for {token}\n{response}\n\n")
+    app.logger.info(f"Received response for {token}\n{response}\n\n")
 
 
 
