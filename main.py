@@ -5,10 +5,12 @@ import threading
 import os
 import openai
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
 
 
 
 app = Flask(__name__)
+app.logger.setLevel(logging.DEBUG)
 
 
 
@@ -17,6 +19,7 @@ app = Flask(__name__)
 operations = {}
 
 def clear_completed_operations():
+    app.logger.log("Clearing operations...")
     tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete']
     for token in tokens_to_remove:
         del operations[token]
@@ -33,35 +36,37 @@ def index():
 
 
 
-# Sending the messages to OpenAI and getting the completion
-def process_prompt(token, messages, model, temperature, max_token):
+# Sending the prompt to OpenAI and getting the completion
+def process_prompt(token, prompt, model, temperature, max_token):
+    app.logger.log(f"Sending message GPT\n{token}\n{prompt}\nmodel: {model}\ntemperature: {temperature}\nmax_token: {max_token}\n\n")
     response = openai.ChatCompletion.create(
         model=model,
-        messages=messages,
+        prompt=prompt,
         max_tokens=max_token,
         temperature=temperature,
     )
     operations[token]['status'] = 'complete'
     operations[token]['completion'] = response
+    app.logger.log(f"Received response for {token}\n{response}\n\n")
 
 
 
 @app.route('/send-prompt', methods=['POST'])
 def send_prompt():
     payload = request.json
-    messages = payload.get('messages')
+    prompt = payload.get('prompt')
     model = payload.get('model', 'gpt-3.5-turbo')
     temperature = payload.get('temperature', '1')
     max_token = payload.get('max_token', '1024')
-    
-    if messages is None:
-        return jsonify({"msg": "Message is required"}), 400
+
+    if prompt is None:
+        return jsonify({"msg": "Prompt is required"}), 400
 
     token = str(uuid.uuid4())
     operations[token] = {"status": "pending", "completion": None}
 
     # Start a new thread to process the prompt (you might want to use a task queue like Celery in production)
-    threading.Thread(target=process_prompt, args=(token, messages, model, temperature, max_token)).start()
+    threading.Thread(target=process_prompt, args=(token, prompt, model, temperature, max_token)).start()
 
     return jsonify({"token": token}), 202
 
