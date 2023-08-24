@@ -3,18 +3,33 @@ import uuid
 from time import sleep
 import threading
 import os
+import openai
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 
 app = Flask(__name__)
 
 
-@app.route('/')
-def index():
-    return jsonify({"Choo Choo": "Welcome to your Flask app!"})
 
 
 # Dictionary to store status and completion by token
 operations = {}
+
+def clear_completed_operations():
+    tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete']
+    for token in tokens_to_remove:
+        del operations[token]
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(clear_completed_operations, 'interval', seconds=60)
+scheduler.start()
+
+
+
+@app.route('/')
+def index():
+    return jsonify(operations)
 
 # Simulated function that represents sending the prompt to OpenAI and getting the completion
 def process_prompt(token, prompt):
