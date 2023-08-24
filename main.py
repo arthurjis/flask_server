@@ -22,7 +22,7 @@ def clear_completed_operations():
         del operations[token]
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(clear_completed_operations, 'interval', seconds=60)
+scheduler.add_job(clear_completed_operations, 'interval', seconds=1800)
 scheduler.start()
 
 
@@ -31,27 +31,37 @@ scheduler.start()
 def index():
     return jsonify(operations)
 
-# Simulated function that represents sending the prompt to OpenAI and getting the completion
-def process_prompt(token, prompt):
-    sleep(60)  # Simulate processing time
-    completion = "Generated completion for: " + prompt
+
+
+# Sending the messages to OpenAI and getting the completion
+def process_prompt(token, messages, model, temperature, max_token):
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        max_tokens=max_token,
+        temperature=temperature,
+    )
     operations[token]['status'] = 'complete'
-    operations[token]['completion'] = completion
+    operations[token]['completion'] = response
 
 
 
 @app.route('/send-prompt', methods=['POST'])
 def send_prompt():
-    prompt_data = request.json
-    prompt = prompt_data.get('prompt')
-    if prompt is None:
-        return jsonify({"msg": "Prompt is required"}), 400
+    payload = request.json
+    messages = payload.get('messages')
+    model = payload.get('model', 'gpt-3.5-turbo')
+    temperature = payload.get('temperature', '1')
+    max_token = payload.get('max_token', '1024')
+    
+    if messages is None:
+        return jsonify({"msg": "Message is required"}), 400
 
     token = str(uuid.uuid4())
     operations[token] = {"status": "pending", "completion": None}
 
     # Start a new thread to process the prompt (you might want to use a task queue like Celery in production)
-    threading.Thread(target=process_prompt, args=(token, prompt)).start()
+    threading.Thread(target=process_prompt, args=(token, messages, model, temperature, max_token)).start()
 
     return jsonify({"token": token}), 202
 
