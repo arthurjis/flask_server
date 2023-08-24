@@ -48,7 +48,7 @@ def process_prompt(token, prompt, model, temperature, max_token):
     app.logger.info(f"Sending message GPT\n{token}\n{prompt}\nmodel: {model}\ntemperature: {temperature}\nmax_token: {max_token}\n\n")
     response = openai.ChatCompletion.create(
         model=model,
-        prompt=prompt,
+        messages=prompt,
         max_tokens=max_token,
         temperature=temperature,
     )
