@@ -13,6 +13,13 @@ app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
 
 
+def get_int_value(payload, key, default_value):
+    value = payload.get(key, default_value)
+    try:
+        return int(value)
+    except ValueError:
+        return default_value
+
 
 
 # Dictionary to store status and completion by token
@@ -56,8 +63,8 @@ def send_prompt():
     payload = request.json
     prompt = payload.get('prompt')
     model = payload.get('model', 'gpt-3.5-turbo')
-    temperature = payload.get('temperature', '1')
-    max_token = payload.get('max_token', '1024')
+    temperature = get_int_value(payload, 'temperature', 1)
+    max_token = get_int_value(payload, 'max_token', 1024)
 
     if prompt is None:
         return jsonify({"msg": "Prompt is required"}), 400
