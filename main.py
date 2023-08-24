@@ -26,7 +26,7 @@ def get_int_value(payload, key, default_value):
 operations = {}
 
 def clear_completed_operations():
-    app.logger.log("Clearing operations...")
+    app.logger.info("Clearing operations...")
     tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete']
     for token in tokens_to_remove:
         del operations[token]
