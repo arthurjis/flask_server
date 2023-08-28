@@ -47,7 +47,9 @@ def index():
 # Sending the prompt to OpenAI and getting the completion
 def process_prompt_list(token, prompt_list, model, temperature, max_token, retries=1):
 
-    # app.logger.debug(f"Begin generate for token {token}")
+    if not prompt_list:
+        operations[token]['status'] = 'failed'
+        operations[token]['error_msg'] = 'Empty prompt list'
 
     messages = [{"role": "system", "content": "You are a helpful assistant."}]
     response_list = []
@@ -86,16 +88,19 @@ def process_prompt_list(token, prompt_list, model, temperature, max_token, retri
             usage += i['usage']['completion_tokens'] * 2e-5 + i['usage']['prompt_tokens'] * 1.5e-5
         except KeyError:
             continue
+    try:
+        completion = {
+            "message": response['choices'][0]['message']['content'],
+            "usage": usage
+        }
+        operations[token]['status'] = 'complete'
+        operations[token]['completion'] = completion
+        app.logger.info(f"Completed generate for token {token}")
 
-    completion = {
-        "message": response['choices'][0]['message']['content'],
-        "usage": usage
-    }
-
-    operations[token]['status'] = 'complete'
-    operations[token]['completion'] = completion
-    
-    app.logger.info(f"Completed generate for token {token}")
+    except KeyError as e:
+        operations[token]['status'] = 'failed'
+        operations[token]['error_msg'] = f"Missing fields in response: {e}, {response}"
+        return
 
 
 
@@ -112,6 +117,9 @@ def generate():
 
     filled_prompts, missing_placeholders, class_type = fetch_prompt_list_and_fill_placeholders_with(form)
 
+    if not filled_prompts or not class_type:
+        return jsonify({"msg": "Bad class type..."}), 400
+    
     token = str(uuid.uuid4())
     operations[token] = {"type": class_type, "num_steps": len(filled_prompts), "current_step": 0, "status": "pending", "completion": None}
 

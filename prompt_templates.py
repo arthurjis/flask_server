@@ -19,6 +19,9 @@ prompt_templates = {
 
 def fetch_prompt_list_and_fill_placeholders_with(input_dict):
     class_type = input_dict.get("class_type")
+    if not class_type:
+        return [], [], ''
+
     template_list = prompt_templates.get(class_type, {}).get("template_list", [])
     
     if not template_list:
