@@ -8,6 +8,7 @@ import logging
 from utils import *
 from prompt_templates import fetch_prompt_list_and_fill_placeholders_with
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -44,7 +45,7 @@ def index():
 
 
 # Sending the prompt to OpenAI and getting the completion
-def process_prompt_list(token, prompt_list, model, temperature, max_token):
+def process_prompt_list(token, prompt_list, model, temperature, max_token, retries=1):
 
     # app.logger.debug(f"Begin generate for token {token}")
 
@@ -54,19 +55,29 @@ def process_prompt_list(token, prompt_list, model, temperature, max_token):
 
     for prompt in prompt_list:
         current_step += 1
-        # app.logger.debug(f'Running for {token}, step {current_step}')
         operations[token]['current_step'] = current_step
         messages.append({"role": "user", "content": prompt})
 
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            max_tokens=max_token,
-            temperature=temperature,
-        )
+        # Retry logic starts here
+        for attempt in range(retries + 1):
+            try:
+                response = openai.ChatCompletion.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=max_token,
+                    temperature=temperature,
+                )
+                messages.append(dict(response['choices'][0]['message']))
+                response_list.append(response)
+                break
 
-        messages.append(dict(response['choices'][0]['message']))
-        response_list.append(response)
+            except Exception as e:
+                if attempt < retries:
+                    time.sleep(1)
+                else:
+                    operations[token]['status'] = 'failed'
+                    operations[token]['error_msg'] = str(e)
+                    return
 
     # Calculate usage in USD
     usage = 0

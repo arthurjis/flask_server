@@ -29,12 +29,12 @@ def fetch_prompt_list_and_fill_placeholders_with(input_dict):
     
     for template in template_list:
         placeholders = re.findall(r"{{\s*(.*?)\s*}}", template)
-        print('placeholders', placeholders)
+        # print('placeholders', placeholders)
         
         filled_template = template
         for placeholder in placeholders:
             if placeholder in input_dict:
-                print(str(input_dict[placeholder]))
+                # print(str(input_dict[placeholder]))
                 filled_template = re.sub(f"{{{{\s*{re.escape(placeholder)}\s*}}}}", str(input_dict[placeholder]), filled_template)
             else:
                 missing_placeholders.add(placeholder)
