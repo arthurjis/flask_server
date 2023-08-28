@@ -22,7 +22,7 @@ def fetch_prompt_list_and_fill_placeholders_with(input_dict):
     template_list = prompt_templates.get(class_type, {}).get("template_list", [])
     
     if not template_list:
-        return [], []
+        return [], [], ''
     
     filled_prompts = []
     missing_placeholders = set()
