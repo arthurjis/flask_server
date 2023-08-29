@@ -62,10 +62,10 @@ def process_prompt_list(collection, token, prompt_list, retries=1, logger=None):
 
                 except Exception as e:
                     if attempt < retries:
-                        logger.warning(f'openai.ChatCompletion failed on attemp {attempt} with error {e} for token {token}, retrying...')
+                        logger.warning(f'openai.ChatCompletion failed on attemp {attempt + 1} with error {e} for token {token}, retrying...')
                         time.sleep(1)
                     else:
-                        logger.error(f'openai.ChatCompletion failed on attemp {attempt} with error {e} for token {token}, exiting...')
+                        logger.error(f'openai.ChatCompletion failed on attemp {attempt + 1} with error {e} for token {token}, exiting...')
                         update_status_in_db(
                             collection, token_id, 'failed', str(e))
                         return
@@ -74,7 +74,7 @@ def process_prompt_list(collection, token, prompt_list, retries=1, logger=None):
         for i in response_list:
             try:
                 if 'gpt-4' in i['model']:
-                    usage += i['usage']['completion_tokens'] * 3e-5 + i['usage']['prompt_tokens'] * 6e-5
+                    usage += i['usage']['completion_tokens'] * 6e-5 + i['usage']['prompt_tokens'] * 3e-5
                 elif 'gpt-3.5-turbo-16k' in i['model']:
                     usage += i['usage']['completion_tokens'] * 4e-6 + i['usage']['prompt_tokens'] * 3e-6
                 elif 'gpt-3.5' in i['model']:
