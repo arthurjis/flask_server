@@ -1,4 +1,6 @@
 import re
+from errors import *
+
 
 prompt_templates = {
     "读写整合课": {
@@ -49,16 +51,15 @@ prompt_templates = {
 
 
 def fetch_prompt_list_and_fill_placeholders_with(input_dict):
+
     class_type = input_dict.get("class_type")
     if not class_type:
-        return [], [], ''
+        raise ClassTypeMissingException("class_type is missing in input_dict")
 
-    template_list = prompt_templates.get(
-        class_type, {}).get("template_list", [])
-
+    template_list = prompt_templates.get(class_type, {}).get("template_list", [])
     if not template_list:
-        return [], [], ''
-
+        raise TemplateListMissingException(f"No template list found for class_type {class_type}")
+    
     filled_prompts = []
     missing_placeholders = set()
 
