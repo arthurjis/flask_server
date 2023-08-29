@@ -38,6 +38,7 @@ def process_prompt_list(collection, token, prompt_list, retries=1, logger=None):
     try:
         for prompt in prompt_list:
             current_step += 1
+            logger.debug(f'Token {token}, starting step {current_step}')
 
             messages.append(
                 {"role": "user", "content": prompt['prompt_string']})
