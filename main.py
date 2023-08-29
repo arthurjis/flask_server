@@ -9,6 +9,8 @@ from utils import *
 from prompt_templates import fetch_prompt_list_and_fill_placeholders_with
 from dotenv import load_dotenv
 import time
+from datetime import datetime, timedelta
+
 
 load_dotenv()
 
@@ -26,13 +28,14 @@ def clear_completed_operations():
     if not len(operations):
         return
 
-    tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete']
+    tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete' and datetime.utcnow() - operation['completion_time'] > timedelta(minutes=1)]
     for token in tokens_to_remove:
-        del operations[token]
+        del operations[token]['completion']
+        operations[token]['status'] = 'expired'
     app.logger.info(f'Cleared {len(tokens_to_remove)} completed operations')
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(clear_completed_operations, 'interval', seconds=3600)
+scheduler.add_job(clear_completed_operations, 'interval', seconds=60)
 scheduler.start()
 
 
@@ -45,7 +48,7 @@ def index():
 
 
 # Sending the prompt to OpenAI and getting the completion
-def process_prompt_list(token, prompt_list, model, temperature, max_token, retries=1):
+def process_prompt_list(token, prompt_list, retries=1):
 
     if not prompt_list:
         operations[token]['status'] = 'failed'
@@ -58,16 +61,16 @@ def process_prompt_list(token, prompt_list, model, temperature, max_token, retri
     for prompt in prompt_list:
         current_step += 1
         operations[token]['current_step'] = current_step
-        messages.append({"role": "user", "content": prompt})
+        messages.append({"role": "user", "content": prompt['prompt_string']})
 
         # Retry logic starts here
         for attempt in range(retries + 1):
             try:
                 response = openai.ChatCompletion.create(
-                    model=model,
+                    model=prompt['model'],
                     messages=messages,
-                    max_tokens=max_token,
-                    temperature=temperature,
+                    max_tokens=prompt['max_tokens'],
+                    temperature=prompt['temperature'],
                 )
                 messages.append(dict(response['choices'][0]['message']))
                 response_list.append(response)
@@ -89,12 +92,15 @@ def process_prompt_list(token, prompt_list, model, temperature, max_token, retri
         except KeyError:
             continue
     try:
-        completion = {
-            "message": response['choices'][0]['message']['content'],
-            "usage": usage
-        }
+        # completion = {
+        #     "message": response['choices'][0]['message']['content'],
+        #     "usage": usage
+        # }
         operations[token]['status'] = 'complete'
-        operations[token]['completion'] = completion
+        # operations[token]['completion'] = completion
+        operations[token]['completion'] = response['choices'][0]['message']['content']
+        operations[token]['usage'] = usage
+        operations[token]['completion_time'] = datetime.utcnow()
         app.logger.info(f"Completed generate for token {token}")
 
     except KeyError as e:
@@ -108,9 +114,6 @@ def process_prompt_list(token, prompt_list, model, temperature, max_token, retri
 def generate():
     payload = request.json
     form = payload.get('form', None)
-    model = payload.get('model', 'gpt-3.5-turbo')
-    temperature = get_float_value(payload, 'temperature', 0.7)
-    max_token = get_int_value(payload, 'max_token', 1024)
 
     if form is None:
         return jsonify({"msg": "Missing form in payload..."}), 400
@@ -121,10 +124,11 @@ def generate():
         return jsonify({"msg": "Bad class type..."}), 400
     
     token = str(uuid.uuid4())
-    operations[token] = {"type": class_type, "num_steps": len(filled_prompts), "current_step": 0, "status": "pending", "completion": None}
+    
+    operations[token] = {"type": class_type, "num_steps": len(filled_prompts), "current_step": 0, "status": "pending", "completion": None, "start_time": datetime.utcnow()}
 
     # Start a new thread to process the prompt (you might want to use a task queue like Celery in production)
-    threading.Thread(target=process_prompt_list, args=(token, filled_prompts, model, temperature, max_token)).start()
+    threading.Thread(target=process_prompt_list, args=(token, filled_prompts)).start()
 
     return jsonify({"class_type": class_type, "token": token, "num_steps": len(filled_prompts), "missing_placeholders": missing_placeholders}), 202
 
