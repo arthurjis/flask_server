@@ -28,14 +28,14 @@ def clear_completed_operations():
     if not len(operations):
         return
 
-    tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete' and datetime.utcnow() - operation['completion_time'] > timedelta(minutes=1)]
+    tokens_to_remove = [token for token, operation in operations.items() if operation['status'] == 'complete' and datetime.utcnow() - operation['completion_time'] > timedelta(hours=1)]
     for token in tokens_to_remove:
         del operations[token]['completion']
         operations[token]['status'] = 'expired'
     app.logger.info(f'Cleared {len(tokens_to_remove)} completed operations')
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(clear_completed_operations, 'interval', seconds=60)
+scheduler.add_job(clear_completed_operations, 'interval', seconds=3600)
 scheduler.start()
 
 
@@ -92,12 +92,7 @@ def process_prompt_list(token, prompt_list, retries=1):
         except KeyError:
             continue
     try:
-        # completion = {
-        #     "message": response['choices'][0]['message']['content'],
-        #     "usage": usage
-        # }
         operations[token]['status'] = 'complete'
-        # operations[token]['completion'] = completion
         operations[token]['completion'] = response['choices'][0]['message']['content']
         operations[token]['usage'] = usage
         operations[token]['completion_time'] = datetime.utcnow()
