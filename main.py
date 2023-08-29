@@ -56,7 +56,7 @@ def generate():
         insert_result = results_collection.insert_one(doc)
         token = insert_result.inserted_id
         threading.Thread(target=process_prompt_list,
-                         args=(token, filled_prompts)).start()
+                         args=(results_collection, token, filled_prompts, 1, app.logger)).start()
         return jsonify({"class_type": class_type, "token": str(token), "num_steps": len(filled_prompts), "missing_placeholders": missing_placeholders}), 202
 
     except Exception as e:
