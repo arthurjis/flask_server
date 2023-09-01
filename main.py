@@ -37,11 +37,11 @@ def generate():
     if form is None:
         return jsonify({"msg": "Missing form in payload..."}), 400
 
-    filled_prompts, missing_placeholders, class_type = fetch_prompt_list_and_fill_placeholders_with(
-        form)
-
-    if not filled_prompts or not class_type:
-        return jsonify({"msg": "Bad class type..."}), 400
+    try:
+        filled_prompts, missing_placeholders, class_type = fetch_prompt_list_and_fill_placeholders_with(
+            form)
+    except Exception as e:
+        return jsonify({"msg": f"Bad class type... {e}"}), 400
 
     doc = {
         "type": class_type,

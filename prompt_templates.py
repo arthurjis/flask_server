@@ -12,13 +12,13 @@ prompt_templates = {
                 "max_tokens": 2048
             },
             {
-                "template_string": """请为上述每项作业附上设计意图或参考答案。""",
+                "template_string": """请为上述每项作业附上设计意图或参考答案。用英语回复""",
                 "model": "gpt-4",
                 "temperature": 1,
                 "max_tokens": 2048
             },
             {
-                "template_string": """请将上述题目整理成一份完整的英语题目清单，按照作业类型进行分类。并将每道题的设计意图和参考答案展示在题目后。""",
+                "template_string": """请将上述题目整理成一份完整的英语题目清单，按照作业类型进行分类。并将每道题的设计意图和参考答案展示在题目后。用英语回复""",
                 "model": "gpt-3.5-turbo",
                 "temperature": 1,
                 "max_tokens": 2048
@@ -28,19 +28,19 @@ prompt_templates = {
     "拓展阅读": {
         "template_list": [
             {
-                "template_string": """假设你是一名在中国的{{class_level}}英语老师，现有一堂{{reading_theme}}的阅读课，请依据下面这篇文章，生成一篇新的延展阅读文章，并设计新文章的续写作业：\n{{reading_article}}\n要求如下：\n1. 新文章字数上限为：{{words_max}}，字数下限为：{{words_min}}\n2. 续写作业题目数为{{d_number}}道""",
+                "template_string": """假设你是一名在中国的{{class_level}}英语老师，现有一堂{{reading_theme}}的阅读课，请依据下面这篇文章，生成一篇新的延展阅读文章，并设计新文章的续写作业：\n{{reading_article}}\n要求如下：\n1. 新文章字数上限为：{{words_max}}，字数下限为：{{words_min}}\n2. 续写作业题目数为{{d_number}}道 用英语回复""",
                 "model": "gpt-4",
                 "temperature": 1,
                 "max_tokens": 2048
             },
             {
-                "template_string": """请为上述续写作业附上设计意图及参考答案。""",
+                "template_string": """请为上述续写作业附上设计意图及参考答案。用英语回复""",
                 "model": "gpt-4",
                 "temperature": 1,
                 "max_tokens": 2048
             },
             {
-                "template_string": """请将上述新阅读文章及题目、设计意图、参考答案整合和一篇完整的英语阅读材料。""",
+                "template_string": """请将上述新阅读文章及题目、设计意图、参考答案整合和一篇完整的英语阅读材料。用英语回复""",
                 "model": "gpt-3.5-turbo",
                 "temperature": 1,
                 "max_tokens": 2048
