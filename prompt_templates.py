@@ -46,7 +46,66 @@ prompt_templates = {
                 "max_tokens": 2048
             }
         ]
-    }
+    },
+    "语法课": {
+        "template_list": [
+            {
+                "template_string": """假设你是一名在中国的{{class_level}}英语老师，现有一堂主题为{{reading_theme}}，关于{{reading_article}}知识点的语法课。请围绕这一主题和知识点，进行相应的作业设计。
+
+作业要求如下：
+1. 作业分为{{question_usage}}，各类作业分别有{{a_number}}；{{b_number}}；{{c_number}}道
+2. 基于英语学习活动观，从学习理解、应用实践、迁移创新三个维度进行分层设计。
+3. 采用多模态的作业形式，影视，图片，音乐都可以，激发学生学习的兴趣，让语法学习生动灵活有趣。
+4. 均用英语回复""",
+                "model": "gpt-4",
+                "temperature": 1,
+                "max_tokens": 2048
+            },
+            {
+                "template_string": """请为上述续写作业附上设计意图及参考答案。用英语回复""",
+                "model": "gpt-4",
+                "temperature": 1,
+                "max_tokens": 2048
+            },
+            {
+                "template_string": """请将上述题目整理成一份完整的英语题目清单，按照作业类型进行分类。并将每道题的设计意图和参考答案展示在题目后。
+均用英语回复。""",
+                "model": "gpt-3.5-turbo",
+                "temperature": 1,
+                "max_tokens": 2048
+            }
+        ]
+    },
+        "听力课": {
+        "template_list": [
+            {
+                "template_string": """假设你是一名在中国的{{class_level}}英语老师，现有一堂主题为{{reading_theme}}的听说课，请依据以下听力文本设计相应的作业：
+
+{{reading_article}}
+
+作业要求如下：
+1. 作业分为{{question_usage}}，各类作业分别有{{a_number}}；{{b_number}}；{{c_number}}道
+2. 基于英语学习活动观，从学习理解、应用实践、迁移创新三个维度进行分层设计。
+3. 均用英语回复""",
+                "model": "gpt-4",
+                "temperature": 1,
+                "max_tokens": 2048
+            },
+            {
+                "template_string": """请为上述续写作业附上设计意图及参考答案。用英语回复""",
+                "model": "gpt-4",
+                "temperature": 1,
+                "max_tokens": 2048
+            },
+            {
+                "template_string": """请将上述题目整理成一份完整的英语题目清单，按照作业类型进行分类。并将每道题的设计意图和参考答案展示在题目后。
+均用英语回复。""",
+                "model": "gpt-3.5-turbo",
+                "temperature": 1,
+                "max_tokens": 2048
+            }
+        ]
+    },
 }
 
 
